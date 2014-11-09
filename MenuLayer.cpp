@@ -7,10 +7,11 @@ bool MenuLayer::init(){
 		return false;
 	}
 
-	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Size winSize = Director::getInstance()->getWinSize();
 	/*初始化背景*/
 	Sprite* background = Sprite::create("bg_menuscene.jpg");
-	background->setPosition(visibleSize.width/2,visibleSize.height/2);
+	background->setPosition(winSize.width/2,winSize.height/2);
+	background->setScale(winSize.height/background->getContentSize().height);
 	this->addChild(background,-1);
 	
 	/*初始化菜单*/
@@ -19,7 +20,7 @@ bool MenuLayer::init(){
 		);
 	Menu* menu = Menu::create(startBtn,NULL);
 	menu->alignItemsVertically();
-	menu->setPosition(visibleSize.width/2,visibleSize.height/2);
+	menu->setPosition(winSize.width/2,winSize.height/2);
 	this->addChild(menu);
 	return true;
 }
