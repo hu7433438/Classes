@@ -103,7 +103,6 @@ void GameLayer::floatLeftStarMsg(int leftNum){
 	FloatWord* leftStarMsg2 = FloatWord::create(ChineseWord("jiangli") + String::createWithFormat("%d",jiangLiScore)->_string + ChineseWord("fen"),
 		50,Point(visibleSize.width,visibleSize.height/2 - 50));
 	this->addChild(leftStarMsg2);
-
 	leftStarMsg1->floatInOut(0.5f,1.0f,
 				[=](){
 					hideLinkNum();

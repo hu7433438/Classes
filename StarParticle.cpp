@@ -3,17 +3,18 @@
 void showStarParticleEffect(int color,Point position,Node* node){
 	ParticleExplosion* effect = ParticleExplosion::create();
 	effect->setTexture(Director::getInstance()->getTextureCache()->addImage("star.png"));
-	effect->setTotalParticles(15);
-	effect->setStartColor(getColor4F(color));
-	effect->setStartColorVar(Color4F(0,0,0,1));
-	effect->setEndColor(getColor4F(color));
-	effect->setEndColorVar(Color4F(0,0,0,1));
-	effect->setStartSize(25.0f);
-	effect->setGravity(Point(0,-300));
-	effect->setLife(1.0f);
-	effect->setSpeed(200);
-	effect->setSpeedVar(10);
-	effect->setPosition(position);
+ 	effect->setTotalParticles(4000);
+ 	effect->setStartColor(getColor4F(color));
+ 	effect->setStartColorVar(Color4F(0,0,0,1));
+ 	effect->setEndColor(getColor4F(color));
+ 	effect->setEndColorVar(Color4F(0,0,0,1));
+ 	effect->setStartSize(15.0f);
+	effect->setEndSize(5.0f);
+ 	effect->setGravity(Point(0,-200));
+ 	effect->setLife(0.2f);
+ 	effect->setSpeed(200);
+ 	effect->setSpeedVar(-50);
+ 	effect->setPosition(position);
 	node->addChild(effect);
 }
 

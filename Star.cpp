@@ -27,6 +27,21 @@ char* Star::getImage(int color){
 	}
 }
 
+char* Star::getImageHeart(int color){
+	switch(color){
+	case color::BLUE:
+		return "blue_heart.png";
+	case color::GREEN:
+		return "green_heart.png";
+	case color::YELLOW:
+		return "orange_heart.png";
+	case color::RED:
+		return "red_heart.png";
+	case color::PURPLE:
+		return "purple_heart.png";
+	}
+}
+
 bool Star::isSelected(){
 	return selected;
 }

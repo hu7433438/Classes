@@ -33,6 +33,14 @@ void StarMatrix::updateStar(float delta){
 		for(int j = 0;j< COL_NUM;j++){
 			if(stars[i][j]!=nullptr){
 				stars[i][j]->updatePosition();
+				if (stars[i][j]->isSelected())
+				{
+					stars[i][j]->setTexture(stars[i][j]->getImageHeart(stars[i][j]->getColor()));
+				}
+				else
+				{
+					stars[i][j]->setTexture(stars[i][j]->getImage(stars[i][j]->getColor()));
+				}
 			}
 		}
 	}
@@ -48,11 +56,12 @@ void StarMatrix::updateStar(float delta){
 
 void StarMatrix::onTouch(const Point& p){
 	Star* s = getStarByTouch(p);
-	if(s){
-	genSelectedList(s);
-	CCLOG("SIZE = %d",selectedList.size());
-	deleteSelectedList();
+	if(s)
+	{
+		deleteSelectedList(s);
+		genSelectedList(s);
 	}
+	//CCLOG("SIZE = %d",selectedList.size());
 }
 
 void StarMatrix::setNeedClear(bool b){
@@ -96,69 +105,91 @@ Star* StarMatrix::getStarByTouch(const Point& p){
 }
 
 void StarMatrix::genSelectedList(Star* s){
-	selectedList.clear();
-	deque<Star*> travelList;
-	travelList.push_back(s);
-	deque<Star*>::iterator it;
-	for(it= travelList.begin();it != travelList.end();){
-		Star* star = *it;
-		Star* linkStar = nullptr;
-		int index_i = star->getIndexI();
-		int index_j = star->getIndexJ();
-		//上
-		if(index_i-1 >= 0 && (linkStar = stars[index_i-1][index_j]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i-1][index_j]);
+	if (s->isSelected())
+	{
+		return;
+	}
+	else
+	{
+		selectedList.clear();
+		deque<Star*> travelList;
+		travelList.push_back(s);
+		deque<Star*>::iterator it;
+		for(it= travelList.begin();it != travelList.end();){
+			Star* star = *it;
+			Star* linkStar = nullptr;
+			int index_i = star->getIndexI();
+			int index_j = star->getIndexJ();
+			//上
+			if(index_i-1 >= 0 && (linkStar = stars[index_i-1][index_j]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor()){
+					travelList.push_back(stars[index_i-1][index_j]);
+				}
+			}
+			//下
+			if(index_i+1 < ROW_NUM  && (linkStar = stars[index_i+1][index_j]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
+					travelList.push_back(stars[index_i+1][index_j]);
+			}
+			//左
+			if(index_j-1 >= 0 && (linkStar = stars[index_i][index_j-1]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
+					travelList.push_back(stars[index_i][index_j-1]);
+			}
+			//右
+			if(index_j+1 < COL_NUM && (linkStar = stars[index_i][index_j+1]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
+					travelList.push_back(stars[index_i][index_j+1]);
+			}
+			if(!star->isSelected()){
+				star->setSelected(true);
+				selectedList.push_back(star);
+			}
+
+			travelList.pop_front();
+			it = travelList.begin();
 		}
-		//下
-		if(index_i+1 < ROW_NUM  && (linkStar = stars[index_i+1][index_j]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i+1][index_j]);
+		if(selectedList.size() <= 1&&selectedList.size()!=0){
+			m_layer->hideLinkNum();
+			selectedList.at(0)->setSelected(false);
+			return;
 		}
-		//左
-		if(index_j-1 >= 0 && (linkStar = stars[index_i][index_j-1]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i][index_j-1]);
-		}
-		//右
-		if(index_j+1 < COL_NUM && (linkStar = stars[index_i][index_j+1]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i][index_j+1]);
-		}
-		if(!star->isSelected()){
-			star->setSelected(true);
-			selectedList.push_back(star);
-		}
-		travelList.pop_front();
-		it = travelList.begin();
 	}
 }
 
-void StarMatrix::deleteSelectedList(){
-	if(selectedList.size() <= 1){
-		m_layer->hideLinkNum();
-		selectedList.at(0)->setSelected(false);
-		return;
+void StarMatrix::deleteSelectedList(Star* s){
+	if (!s->isSelected())
+	{
+		for(int i = 0;i < ROW_NUM;i++){
+			for(int j = 0;j< COL_NUM;j++){
+				if(stars[i][j]!=nullptr){
+					stars[i][j]->setSelected(false);
+				}
+			}
+		}
 	}
-	for(auto it = selectedList.begin();it != selectedList.end();it++){
-		Star* star = *it;
-		//粒子效果
-		showStarParticleEffect(star->getColor(),star->getPosition(),this);
-		stars[star->getIndexI()][star->getIndexJ()] = nullptr;
-		star->removeFromParentAndCleanup(true);
-		//播放音效
-		Audio::getInstance()->playPop();
-	}
-	//COMBO效果
-	showComboEffect(selectedList.size(),this);
-	Audio::getInstance()->playCombo(selectedList.size());
+	else
+	{
+		for(auto it = selectedList.begin();it != selectedList.end();it++){
+			Star* star = *it;
+			//粒子效果
+			showStarParticleEffect(star->getColor(),star->getPosition(),this);
+			stars[star->getIndexI()][star->getIndexJ()] = nullptr;
+			star->removeFromParentAndCleanup(true);
+			//播放音效
+			Audio::getInstance()->playPop();
+		}
+		//COMBO效果
+		showComboEffect(selectedList.size(),this);
+		Audio::getInstance()->playCombo(selectedList.size());
 
-	refreshScore();
-	m_layer->showLinkNum(selectedList.size());
-	adjustMatrix();
-	if(isEnded()){
-		m_layer->floatLeftStarMsg(getLeftStarNum());//通知layer弹出剩余星星的信息
-		CCLOG("ENDED");
+		refreshScore();
+		m_layer->showLinkNum(selectedList.size());
+		adjustMatrix();
+		if(isEnded()){
+			m_layer->floatLeftStarMsg(getLeftStarNum());//通知layer弹出剩余星星的信息
+			CCLOG("ENDED");
+		}
 	}
 }
 
