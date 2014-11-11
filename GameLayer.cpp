@@ -22,7 +22,7 @@ bool GameLayer::init(){
 	this->addChild(background,-1);
 	menu = TopMenu::create();
 	this->addChild(menu);
-	linkNum = Label::create("","Arial",40);
+	linkNum = Label::create("","华康海报体W12(P)",40);
 	linkNum->setPosition(visibleSize.width/2,visibleSize.height-250);
 	linkNum->setVisible(false);
 	this->addChild(linkNum,1);
