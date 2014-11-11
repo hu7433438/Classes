@@ -28,19 +28,19 @@ bool StarMatrix::init(GameLayer* layer){
 }
 
 void StarMatrix::updateStar(float delta){
-	
+
 	for(int i = 0;i < ROW_NUM;i++){
 		for(int j = 0;j< COL_NUM;j++){
 			if(stars[i][j]!=nullptr){
 				stars[i][j]->updatePosition();
-// 				if (stars[i][j]->isSelected())
-// 				{
-// 					stars[i][j]->setTexture(stars[i][j]->getImageHeart(stars[i][j]->getColor()));
-// 				}
-// 				else
-// 				{
-// 					stars[i][j]->setTexture(stars[i][j]->getImage(stars[i][j]->getColor()));
-// 				}
+				if (stars[i][j]->isSelected())
+				{
+					stars[i][j]->setTexture(stars[i][j]->getImageHeart(stars[i][j]->getColor()));
+				}
+				else
+				{
+					stars[i][j]->setTexture(stars[i][j]->getImage(stars[i][j]->getColor()));
+				}
 			}
 		}
 	}
@@ -51,16 +51,15 @@ void StarMatrix::updateStar(float delta){
 			clearSumTime = 0;
 		}
 	}
-	
+
 }
 
 void StarMatrix::onTouch(const Point& p){
 	Star* s = getStarByTouch(p);
 	if(s)
 	{
-		genSelectedList(s);
 		deleteSelectedList(s);
-		
+		genSelectedList(s);
 	}
 	//CCLOG("SIZE = %d",selectedList.size());
 }
@@ -96,81 +95,101 @@ Star* StarMatrix::getStarByTouch(const Point& p){
 	int i = ROW_NUM - 1 - k;
 	int j = p.x/Star::STAR_WIDTH;
 	if(i >= 0 && i < ROW_NUM && 
-	   j >= 0 && j < COL_NUM &&
-	   stars[i][j] != nullptr){
-		CCLOG("i=%d,j=%d",i,j);
-		return stars[i][j];
+		j >= 0 && j < COL_NUM &&
+		stars[i][j] != nullptr){
+			CCLOG("i=%d,j=%d",i,j);
+			return stars[i][j];
 	}else{
 		return nullptr;
 	}
 }
 
 void StarMatrix::genSelectedList(Star* s){
-	selectedList.clear();
-	deque<Star*> travelList;
-	travelList.push_back(s);
-	deque<Star*>::iterator it;
-	for(it= travelList.begin();it != travelList.end();){
-		Star* star = *it;
-		Star* linkStar = nullptr;
-		int index_i = star->getIndexI();
-		int index_j = star->getIndexJ();
-		//上
-		if(index_i-1 >= 0 && (linkStar = stars[index_i-1][index_j]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor()){
-				travelList.push_back(stars[index_i-1][index_j]);
+	if (s->isSelected())
+	{
+		return;
+	}
+	else
+	{
+		selectedList.clear();
+		deque<Star*> travelList;
+		travelList.push_back(s);
+		deque<Star*>::iterator it;
+		for(it= travelList.begin();it != travelList.end();){
+			Star* star = *it;
+			Star* linkStar = nullptr;
+			int index_i = star->getIndexI();
+			int index_j = star->getIndexJ();
+			//上
+			if(index_i-1 >= 0 && (linkStar = stars[index_i-1][index_j]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor()){
+					travelList.push_back(stars[index_i-1][index_j]);
+				}
 			}
-		}
-		//下
-		if(index_i+1 < ROW_NUM  && (linkStar = stars[index_i+1][index_j]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i+1][index_j]);
-		}
-		//左
-		if(index_j-1 >= 0 && (linkStar = stars[index_i][index_j-1]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i][index_j-1]);
-		}
-		//右
-		if(index_j+1 < COL_NUM && (linkStar = stars[index_i][index_j+1]) ){
-			if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
-				travelList.push_back(stars[index_i][index_j+1]);
-		}
-		if(!star->isSelected()){
-			star->setSelected(true);
-			selectedList.push_back(star);
-		}
+			//下
+			if(index_i+1 < ROW_NUM  && (linkStar = stars[index_i+1][index_j]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
+					travelList.push_back(stars[index_i+1][index_j]);
+			}
+			//左
+			if(index_j-1 >= 0 && (linkStar = stars[index_i][index_j-1]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
+					travelList.push_back(stars[index_i][index_j-1]);
+			}
+			//右
+			if(index_j+1 < COL_NUM && (linkStar = stars[index_i][index_j+1]) ){
+				if(!linkStar->isSelected() && linkStar->getColor() == star->getColor())
+					travelList.push_back(stars[index_i][index_j+1]);
+			}
+			if(!star->isSelected()){
+				star->setSelected(true);
+				selectedList.push_back(star);
+			}
 
-		travelList.pop_front();
-		it = travelList.begin();
+			travelList.pop_front();
+			it = travelList.begin();
+		}
+		if(selectedList.size() <= 1&&selectedList.size()!=0){
+			m_layer->hideLinkNum();
+			selectedList.at(0)->setSelected(false);
+			return;
+		}
 	}
 }
 
 void StarMatrix::deleteSelectedList(Star* s){
-	if(selectedList.size() <= 1&&selectedList.size()!=0){
-		m_layer->hideLinkNum();
-		selectedList.at(0)->setSelected(false);
-		return;
+	if (!s->isSelected())
+	{
+		for(int i = 0;i < ROW_NUM;i++){
+			for(int j = 0;j< COL_NUM;j++){
+				if(stars[i][j]!=nullptr){
+					stars[i][j]->setSelected(false);
+				}
+			}
+		}
 	}
-	for(auto it = selectedList.begin();it != selectedList.end();it++){
-		Star* star = *it;
-		//粒子效果
-		showStarParticleEffect(star->getColor(),star->getPosition(),this);
-		stars[star->getIndexI()][star->getIndexJ()] = nullptr;
-		star->removeFromParentAndCleanup(true);
-		//播放音效
-		Audio::getInstance()->playPop();
-	}
-	//COMBO效果
-	showComboEffect(selectedList.size(),this);
-	Audio::getInstance()->playCombo(selectedList.size());
+	else
+	{
+		for(auto it = selectedList.begin();it != selectedList.end();it++){
+			Star* star = *it;
+			//粒子效果
+			showStarParticleEffect(star->getColor(),star->getPosition(),this);
+			stars[star->getIndexI()][star->getIndexJ()] = nullptr;
+			star->removeFromParentAndCleanup(true);
+			//播放音效
+			Audio::getInstance()->playPop();
+		}
+		//COMBO效果
+		showComboEffect(selectedList.size(),this);
+		Audio::getInstance()->playCombo(selectedList.size());
 
-	refreshScore();
-	m_layer->showLinkNum(selectedList.size());
-	adjustMatrix();
-	if(isEnded()){
-		m_layer->floatLeftStarMsg(getLeftStarNum());//通知layer弹出剩余星星的信息
-		CCLOG("ENDED");
+		refreshScore();
+		m_layer->showLinkNum(selectedList.size());
+		adjustMatrix();
+		if(isEnded()){
+			m_layer->floatLeftStarMsg(getLeftStarNum());//通知layer弹出剩余星星的信息
+			CCLOG("ENDED");
+		}
 	}
 }
 
@@ -188,7 +207,7 @@ void StarMatrix::adjustMatrix(){
 						break;
 					}
 				}
-				
+
 				for(int begin_i = i - dis;begin_i >= 0;begin_i--){
 					if(stars[begin_i][j] == nullptr)
 						continue;
